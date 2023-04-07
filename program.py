@@ -48,12 +48,12 @@ letterFrequency = {
 
 def containsAny(myString: str, chars: set[chr]):
     """ Check whether sequence str contains ANY of the items in set. """
-    return 1 in [c in myString for c in chars]
+    return True in [c in myString for c in chars]
 
 
 def containsAll(myString: str, chars: set[chr]):
     """ Check whether sequence str contains ALL of the items in set. """
-    return 0 not in [c in myString for c in chars]
+    return False not in [c in myString for c in chars]
 
 def hasRightChars(myString: str, chrs: dict[chr,int]):
     """ Predicate for whether a given string has particular characters, at the given indexes"""
