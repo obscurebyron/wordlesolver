@@ -170,3 +170,14 @@ class WordleSolver:
 
 w = WordleSolver()
 
+while(True):
+    guess = input('enter your guess word: ')
+
+    ri = input('right indexes, separated by space: ').split()
+    riSet = set([int(i) for i in ri])
+
+    mi = input('mismatched indexes, separated by space: ').split()
+    miSet = set([int(i) for i in mi])
+
+    w.analyze(guess, riSet, miSet)
+
