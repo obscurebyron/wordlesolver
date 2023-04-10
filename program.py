@@ -198,6 +198,23 @@ class WordleSolver:
     
 w = WordleSolver()
 
+print("""
+Help:
+====
+
+Enter the guess you used in Wordle (https://www.nytimes.com/games/wordle/index.html).
+Each word's indexes are zero-based (i.e. the first index is 0, the last is 4).
+"right indexes" means those letters that Wordle tells you are in the right spot.
+"mismatched indexes" means letters that Wordle tells you are not in the right spot.
+"possible words" are a list of words that are still possibilities, given everything we know.
+"suggested letters" are what remain to try out, filtered by what exist in the possible words.
+"state" shows what the program knows about the state of this puzzle (e.g. rightChars, etc).
+Recommended words are what you might try, sorted to include the most frequently-used letters.
+"recommended fresh words" are similar, but include more unused letters (to knock out possibilities faster).
+"recommended vowel fresh words" is similar, but with more vowels.
+"last-ditch fresh words" are like recommended fresh words, except we give it back vowels (we can't make many words without vowels).
+""")
+
 while(True):
     guess = input('\nenter your guess word: ')
 
