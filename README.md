@@ -3,7 +3,8 @@ Wordle solver
 
 To use:
 
-    byron@Byrons-MBP a % python3 program.py
+    % python3 program.py
+
     enter your guess word: later   
     right indexes, separated by space: 
     mismatched indexes, separated by space: 3 4
@@ -37,3 +38,5 @@ To use:
     last-ditch fresh words: ['aargh', 'abear', 'abhor', 'abore', 'abram', 'abray', 'abrim', 'abrin', 'aerie', 'afara', 'afear', 'afire', 'afore', 'agger', 'aggri', 'aggro', 'aggry', 'agree', 'agria', 'agrin'] (1569 total)
     
     enter your guess word: 
+
+![alt text](wordle_example.png "example wordle screenshot")
