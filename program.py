@@ -199,7 +199,7 @@ class WordleSolver:
 w = WordleSolver()
 
 while(True):
-    guess = input('enter your guess word: ')
+    guess = input('\nenter your guess word: ')
 
     ri = input('right indexes, separated by space: ').split()
     riSet = set([int(i) for i in ri])
