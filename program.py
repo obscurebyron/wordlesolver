@@ -121,38 +121,48 @@ class WordleSolver:
             (self.state.badChars | newBadChars) - (newRightChars.keys() | newMisplaceChars.keys()),
             )
         
-        print('possible words: ' + str(self.new_possibilities()))
-        print('suggested letters: ' + str(self.suggestions()))
+        new_possibilities = self.new_possibilities()
+        suggestions = self.suggestions()
+        max_unique_high_freq_letters = self.maximum_unique_high_freq_letters()
+        max_unique_high_freq_letters_fresh = self.maximum_unique_high_freq_letters_fresh()
+        max_vowels_unique_high_freq_letters_fresh = self.maximum_vowels_unique_high_freq_letters_fresh()
+
+        print('possible words: ' + str(new_possibilities[0:10]) + ' ('+ str(len(new_possibilities)) +' total)')
+        print('suggested letters: ' + str(suggestions))
         print('state: ' + str(self.state))
-        print('recommended words: ' + str(self.maximum_unique_high_freq_letters()[0:10]))
-        print('recommended fresh words: ' + str(self.maximum_unique_high_freq_letters_fresh()[0:10]))
-        print('recommended vowel-fresh words: ' + str(self.maximum_vowels_unique_high_freq_letters_fresh()[0:10]))
+        print('recommended words: ' + str(max_unique_high_freq_letters[0:10]) + ' ('+ str(len(max_unique_high_freq_letters)) +' total)')
+        print('recommended fresh words: ' + str(max_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_unique_high_freq_letters_fresh)) +' total)')
+        print('recommended vowel-fresh words: ' + str(max_vowels_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_vowels_unique_high_freq_letters_fresh)) +' total)')
         if len(self.maximum_vowels_unique_high_freq_letters_fresh()) < 3:
-            print('last-ditch fresh words: ' + str(self.last_ditch_fresh_possibilities()[0:20]))
+            last_ditch_fresh_possibilities = self.last_ditch_fresh_possibilities()
+            print('last-ditch fresh words: ' + str(last_ditch_fresh_possibilities[0:20]) + ' ('+ str(len(last_ditch_fresh_possibilities)) +' total)')
 
     def reset(self):
         self.state = self.StateData(dict(), dict(), set())
 
     def suggestions(self):
+        """calculates letters to try based on whether they exist in the possible words / not already used, etc."""
         surviving_chars = without_keys(letterFrequency, self.state.badChars | set(self.state.rightChars.values()) | set(self.state.misplacedChars.values()))
         result = set(sorted(surviving_chars, key=surviving_chars.get, reverse=True))
         intersectionWithPossibleWords = result.intersection(set(''.join(self.new_possibilities())))
         return intersectionWithPossibleWords
     
     def new_possibilities(self):
+        """calculates a list of the words that are actually possible now, based on used/right/misplaced characters"""
         return [x for x in wordlist if hasRightChars(x, self.state.rightChars) and hasMisplacedChar(x, self.state.misplacedChars) and not containsAny(x, self.state.badChars)]
 
     def new_fresh_letter_possibilities(self):
+        """calculates words with letters you haven't used, to knock out letters faster"""
         return [x for x in wordlist if not containsAny(x, self.state.badChars | set(self.state.rightChars.values()) | set(self.state.misplacedChars.values()) )]
 
     def last_ditch_fresh_possibilities(self):
-        """This is like new fresh letter possibilities, except we give it back vowels"""
+        """This is like new fresh letter possibilities, except we give it back vowels (we can't make many words without vowels)"""
         words = [x for x in wordlist if not containsAny(x, (self.state.badChars | set(self.state.rightChars.values()) | set(self.state.misplacedChars.values())) - {'a','e','i','o','u','y'} )]
         scored_words = {w : len(self.suggestions().intersection(set(w))) for w in words}
         return sorted(scored_words, key=scored_words.get, reverse=True)
 
     def maximum_unique_high_freq_letters(self):
-        """return those words within the new_possibilities() set that have the most high-frequency letters"""
+        """words that are possible that have the most high-frequency letters"""
         results = dict()
         new_p = self.new_possibilities()
         
@@ -164,7 +174,7 @@ class WordleSolver:
     
 
     def maximum_unique_high_freq_letters_fresh(self):
-        """return those words within the new_possibilities() set that have the most high-frequency letters"""
+        """words that are possible that have the most high-frequency letters, with all unused letters (to knock out letter faster)"""
         results = dict()
         fresh_p = self.new_fresh_letter_possibilities()
         
@@ -176,7 +186,7 @@ class WordleSolver:
     
 
     def maximum_vowels_unique_high_freq_letters_fresh(self):
-        """return those words within the new_possibilities() set that have the most high-frequency letters"""
+        """return those words within the new_possibilities() set that have the most high-frequency letters, with frequency-weighting adjusted to favor vowels (to knock out vowels faster)"""
         results = dict()
         fresh_p = self.new_fresh_letter_possibilities()
         
