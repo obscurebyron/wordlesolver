@@ -61,15 +61,15 @@ def hasRightChars(myString: str, chrs: dict[int,chr]):
             return False
     return True
 
-def hasMisplacedChar(myString: str, chrs: dict[int,chr]):
+def hasMisplacedChar(myString: str, chrs: set[(int,chr)]):
     """ Predicate for whether a given string has particular characters, but not at the given indexes"""
     # we gotta check - it's in there, right?
-    if not containsAll(myString, chrs.values()):
+    if not containsAll(myString, [x for _,x in chrs]):
         return False
     
     # but now, let's make sure it's not in the spot.  If it *is* in that spot, it's not the word under review
-    for key in chrs:
-        if myString[key] == chrs[key]:
+    for x,y in chrs:
+        if myString[x] == y:
             return False
     return True
 
@@ -97,10 +97,10 @@ class WordleSolver:
     class StateData:
         """state of the analyzer"""
         rightChars: dict[int, chr]
-        misplacedChars: dict[int, chr]
+        misplacedChars: set[(int, chr)]
         badChars: set
    
-    state = StateData(dict(), dict(), set())
+    state = StateData(dict(), set(), set())
 
     def analyze(self, myString: str, rightIndexes: set[int], misplacedIndexes: set[int]):
         """str is the attempted word.  rightIndexes are what wordle told us are chars in the right place,
@@ -110,15 +110,15 @@ class WordleSolver:
         newRightChars = {x : myString[x] for x in rightIndexes}
 
         # given myString=abcde and misplacedIndexes=[4], get {4:e}
-        newMisplaceChars = {x : myString[x] for x in misplacedIndexes}
+        newMisplaceChars = {(x , myString[x]) for x in misplacedIndexes}
 
         # given myString=abcde and misplacedIndexes=[4] and rightIndexes=[2,3], get ['a','b']
         newBadChars = removeCharFromStringByIndexes(myString, (rightIndexes | misplacedIndexes))
-       
+
         self.state = self.StateData(
             self.state.rightChars | newRightChars,
             self.state.misplacedChars | newMisplaceChars, 
-            (self.state.badChars | newBadChars) - (newRightChars.keys() | newMisplaceChars.keys()),
+            (self.state.badChars | newBadChars) - (set(newRightChars.values()) | {x for _,x in newMisplaceChars})
             )
         
         new_possibilities = self.new_possibilities()
@@ -130,9 +130,9 @@ class WordleSolver:
         print('possible words: ' + str(new_possibilities[0:10]) + ' ('+ str(len(new_possibilities)) +' total)')
         print('suggested letters: ' + str(suggestions))
         print('state: ' + str(self.state))
-        print('recommended words: ' + str(max_unique_high_freq_letters[0:10]) + ' ('+ str(len(max_unique_high_freq_letters)) +' total)')
-        print('recommended fresh words: ' + str(max_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_unique_high_freq_letters_fresh)) +' total)')
-        print('recommended vowel-fresh words: ' + str(max_vowels_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_vowels_unique_high_freq_letters_fresh)) +' total)')
+        print('recommended words (no duplicate letters): ' + str(max_unique_high_freq_letters[0:10]) + ' ('+ str(len(max_unique_high_freq_letters)) +' total)')
+        print('recommended fresh words (untested letters): ' + str(max_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_unique_high_freq_letters_fresh)) +' total)')
+        print('recommended vowel-fresh words (vowels added in): ' + str(max_vowels_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_vowels_unique_high_freq_letters_fresh)) +' total)')
         if len(self.maximum_vowels_unique_high_freq_letters_fresh()) < 3:
             last_ditch_fresh_possibilities = self.last_ditch_fresh_possibilities()
             print('last-ditch fresh words: ' + str(last_ditch_fresh_possibilities[0:20]) + ' ('+ str(len(last_ditch_fresh_possibilities)) +' total)')
@@ -142,7 +142,7 @@ class WordleSolver:
 
     def suggestions(self):
         """calculates letters to try based on whether they exist in the possible words / not already used, etc."""
-        surviving_chars = without_keys(letterFrequency, self.state.badChars | set(self.state.rightChars.values()) | set(self.state.misplacedChars.values()))
+        surviving_chars = without_keys(letterFrequency, self.state.badChars | set(self.state.rightChars.values()) | {y for x,y in self.state.misplacedChars})
         result = set(sorted(surviving_chars, key=surviving_chars.get, reverse=True))
         intersectionWithPossibleWords = result.intersection(set(''.join(self.new_possibilities())))
         return intersectionWithPossibleWords
@@ -153,11 +153,11 @@ class WordleSolver:
 
     def new_fresh_letter_possibilities(self):
         """calculates words with letters you haven't used, to knock out letters faster"""
-        return [x for x in wordlist if not containsAny(x, self.state.badChars | set(self.state.rightChars.values()) | set(self.state.misplacedChars.values()) )]
+        return [x for x in wordlist if not containsAny(x, self.state.badChars | set(self.state.rightChars.values()) | {y for x,y in self.state.misplacedChars} )]
 
     def last_ditch_fresh_possibilities(self):
         """This is like new fresh letter possibilities, except we give it back vowels (we can't make many words without vowels)"""
-        words = [x for x in wordlist if not containsAny(x, (self.state.badChars | set(self.state.rightChars.values()) | set(self.state.misplacedChars.values())) - {'a','e','i','o','u','y'} )]
+        words = [x for x in wordlist if not containsAny(x, (self.state.badChars | set(self.state.rightChars.values()) | {y for x,y in self.state.misplacedChars}) - {'a','e','i','o','u','y'} )]
         scored_words = {w : len(self.suggestions().intersection(set(w))) for w in words}
         return sorted(scored_words, key=scored_words.get, reverse=True)
 
