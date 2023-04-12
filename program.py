@@ -132,10 +132,10 @@ class WordleSolver:
         print('state: ' + str(self.state))
         print('recommended words (no duplicate letters): ' + str(max_unique_high_freq_letters[0:10]) + ' ('+ str(len(max_unique_high_freq_letters)) +' total)')
         print('recommended fresh words (untested letters): ' + str(max_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_unique_high_freq_letters_fresh)) +' total)')
-        print('recommended vowel-fresh words (vowels added in): ' + str(max_vowels_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_vowels_unique_high_freq_letters_fresh)) +' total)')
+        print('recommended vowel-fresh words (vowels emphasized): ' + str(max_vowels_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_vowels_unique_high_freq_letters_fresh)) +' total)')
         if len(self.maximum_vowels_unique_high_freq_letters_fresh()) < 3:
             last_ditch_fresh_possibilities = self.last_ditch_fresh_possibilities()
-            print('last-ditch fresh words: ' + str(last_ditch_fresh_possibilities[0:20]) + ' ('+ str(len(last_ditch_fresh_possibilities)) +' total)')
+            print('last-ditch fresh words (already-tested vowels added back in to make more words): ' + str(last_ditch_fresh_possibilities[0:20]) + ' ('+ str(len(last_ditch_fresh_possibilities)) +' total)')
 
     def reset(self):
         self.state = self.StateData(dict(), dict(), set())
