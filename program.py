@@ -106,7 +106,8 @@ class WordleSolver:
    
     state = StateData(dict(), set(), set())
 
-    def analyze(self, myString: str, rightIndexes: set[int], misplacedIndexes: set[int]):
+    def analyze(self, myString: str, rightIndexes: set[int], 
+                misplacedIndexes: set[int], is_hard_mode: bool):
         """str is the attempted word.  rightIndexes are what wordle told us are chars in the right place,
         misplacedIndexes are the chars that exist in the word but are in the wrong place"""
 
@@ -137,11 +138,13 @@ class WordleSolver:
         print('suggested letters: ' + str(suggestions))
         print('state: ' + str(self.state))
         print('recommended words (no duplicate letters): ' + str(max_unique_high_freq_letters[0:10]) + ' ('+ str(len(max_unique_high_freq_letters)) +' total)')
-        print('recommended fresh words (untested letters): ' + str(max_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_unique_high_freq_letters_fresh)) +' total)')
-        print('recommended vowel-fresh words (vowels emphasized): ' + str(max_vowels_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_vowels_unique_high_freq_letters_fresh)) +' total)')
-        if len(self.maximum_vowels_unique_high_freq_letters_fresh()) < 3:
-            last_ditch_fresh_possibilities = self.last_ditch_fresh_possibilities()
-            print('last-ditch fresh words (already-tested vowels added back in to make more words): ' + str(last_ditch_fresh_possibilities[0:20]) + ' ('+ str(len(last_ditch_fresh_possibilities)) +' total)')
+        
+        if (not is_hard_mode):
+            print('recommended fresh words (untested letters): ' + str(max_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_unique_high_freq_letters_fresh)) +' total)')
+            print('recommended vowel-fresh words (vowels emphasized): ' + str(max_vowels_unique_high_freq_letters_fresh[0:10])+ ' ('+ str(len(max_vowels_unique_high_freq_letters_fresh)) +' total)')
+            if len(self.maximum_vowels_unique_high_freq_letters_fresh()) < 3:
+                last_ditch_fresh_possibilities = self.last_ditch_fresh_possibilities()
+                print('last-ditch fresh words (already-tested vowels added back in to make more words): ' + str(last_ditch_fresh_possibilities[0:20]) + ' ('+ str(len(last_ditch_fresh_possibilities)) +' total)')
 
     def reset(self):
         self.state = self.StateData(dict(), dict(), set())
@@ -225,6 +228,9 @@ Recommended words are what you might try, sorted to include the most frequently-
 "last-ditch fresh words" are like recommended fresh words, except we give it back vowels (we can't make many words without vowels).
 """)
 
+is_hard_mode_input = input("\nAre you on hard mode? (Y/N):")
+is_hard_mode = is_hard_mode_input in ('y','Y')
+
 while(True):
     guess = input('\nenter your guess word: ')
 
@@ -234,5 +240,5 @@ while(True):
     mi = input('mismatched indexes, separated by space: ').split()
     miSet = set([int(i) for i in mi])
 
-    w.analyze(guess, riSet, miSet)
+    w.analyze(guess, riSet, miSet, is_hard_mode)
 
