@@ -10,9 +10,13 @@
 from functools import reduce
 from dataclasses import dataclass
 
-# get the file's data
+# get the words that are allowable in wordle
 with open('wordlist.txt') as f:
     wordlist = f.read().splitlines()
+
+# get the realistic words
+with open('popular_5_length.txt') as f:
+    realistic_wordlist = f.read().splitlines()
 
 # charCount = {}
 # for word in wordlist:
@@ -122,12 +126,14 @@ class WordleSolver:
             )
         
         new_possibilities = self.new_possibilities()
-        suggestions = self.suggestions()
+        new_possibilities_realistic = self.new_possibilities_realistic()
+        suggestions = self.suggested_letters()
         max_unique_high_freq_letters = self.maximum_unique_high_freq_letters()
         max_unique_high_freq_letters_fresh = self.maximum_unique_high_freq_letters_fresh()
         max_vowels_unique_high_freq_letters_fresh = self.maximum_vowels_unique_high_freq_letters_fresh()
 
         print('possible words: ' + str(new_possibilities[0:10]) + ' ('+ str(len(new_possibilities)) +' total)')
+        print('realistic words: ' + str(new_possibilities_realistic[0:10]) + ' ('+ str(len(new_possibilities_realistic)) +' total)' )
         print('suggested letters: ' + str(suggestions))
         print('state: ' + str(self.state))
         print('recommended words (no duplicate letters): ' + str(max_unique_high_freq_letters[0:10]) + ' ('+ str(len(max_unique_high_freq_letters)) +' total)')
@@ -140,7 +146,7 @@ class WordleSolver:
     def reset(self):
         self.state = self.StateData(dict(), dict(), set())
 
-    def suggestions(self):
+    def suggested_letters(self):
         """calculates letters to try based on whether they exist in the possible words / not already used, etc."""
         surviving_chars = without_keys(letterFrequency, self.state.badChars | set(self.state.rightChars.values()) | {y for x,y in self.state.misplacedChars})
         result = set(sorted(surviving_chars, key=surviving_chars.get, reverse=True))
@@ -150,6 +156,10 @@ class WordleSolver:
     def new_possibilities(self):
         """calculates a list of the words that are actually possible now, based on used/right/misplaced characters"""
         return [x for x in wordlist if hasRightChars(x, self.state.rightChars) and hasMisplacedChar(x, self.state.misplacedChars) and not containsAny(x, self.state.badChars)]
+    
+    def new_possibilities_realistic(self):
+        """calculates a list of the words that are actually possible now, based on used/right/misplaced characters"""
+        return [x for x in realistic_wordlist if hasRightChars(x, self.state.rightChars) and hasMisplacedChar(x, self.state.misplacedChars) and not containsAny(x, self.state.badChars)]
 
     def new_fresh_letter_possibilities(self):
         """calculates words with letters you haven't used, to knock out letters faster"""
@@ -158,7 +168,7 @@ class WordleSolver:
     def last_ditch_fresh_possibilities(self):
         """This is like new fresh letter possibilities, except we give it back vowels (we can't make many words without vowels)"""
         words = [x for x in wordlist if not containsAny(x, (self.state.badChars | set(self.state.rightChars.values()) | {y for x,y in self.state.misplacedChars}) - {'a','e','i','o','u','y'} )]
-        scored_words = {w : len(self.suggestions().intersection(set(w))) for w in words}
+        scored_words = {w : len(self.suggested_letters().intersection(set(w))) for w in words}
         return sorted(scored_words, key=scored_words.get, reverse=True)
 
     def maximum_unique_high_freq_letters(self):
